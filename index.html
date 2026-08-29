@@ -3,30 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Database Search Portal</title>
+  <title>Electoral Database Search Portal</title>
+  <!-- Google Font: Inter / Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- PapaParse for Google Sheets CSV parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --bg: #f8fafc;
+      --bg-color: #f6f9fc;
       --card-bg: #ffffff;
-      --text: #1e293b;
-      --border: #e2e8f0;
+      --primary: #1a6dff;
+      --primary-hover: #1255cc;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --input-border: #e2e8f0;
+      --input-focus: #1a6dff;
+      --clear-btn-bg: #e2e8f0;
+      --clear-btn-hover: #cbd5e1;
+      --clear-btn-text: #334155;
+      --table-header-bg: #f8fafc;
+      --shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 24px;
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      /* Selection Lock */
+      -webkit-touch-callout: none;
       -webkit-user-select: none;
       -khtml-user-select: none;
       -moz-user-select: none;
@@ -35,40 +53,47 @@
     }
 
     .container {
-      max-width: 1200px;
+      width: 100%;
+      max-width: 1180px;
       margin: 0 auto;
     }
 
+    /* Header Section */
     .header {
-      margin-bottom: 24px;
+      margin-bottom: 30px;
       text-align: center;
     }
 
     .header h1 {
-      font-size: 1.8rem;
-      color: #0f172a;
-      margin-bottom: 6px;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
     }
 
     .header p {
-      color: #64748b;
-      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      font-weight: 500;
     }
 
+    /* Card Container */
     .card {
       background: var(--card-bg);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-      border: 1px solid var(--border);
+      padding: 28px 32px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
       margin-bottom: 24px;
     }
 
+    /* 3-Column Search Grid */
     .search-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
     }
 
     .form-group {
@@ -77,43 +102,54 @@
     }
 
     .form-group label {
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       font-weight: 600;
-      color: #475569;
-      margin-bottom: 6px;
+      color: var(--text-dark);
+      margin-bottom: 8px;
     }
 
     .form-group input {
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.9rem;
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      background-color: #ffffff;
+      border: 1.5px solid var(--input-border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text-dark);
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: all 0.2s ease-in-out;
       -webkit-user-select: auto;
-      -moz-user-select: auto;
-      -ms-user-select: auto;
       user-select: auto;
     }
 
-    .form-group input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    .form-group input::placeholder {
+      color: #94a3b8;
     }
 
+    .form-group input:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(26, 109, 255, 0.12);
+    }
+
+    /* Buttons */
     .btn-container {
       display: flex;
       gap: 12px;
     }
 
     .btn {
-      padding: 10px 22px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      border-radius: 6px;
+      height: 44px;
+      padding: 0 28px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
-      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
     }
 
     .btn-primary {
@@ -126,68 +162,83 @@
     }
 
     .btn-secondary {
-      background: #e2e8f0;
-      color: #475569;
+      background: var(--clear-btn-bg);
+      color: var(--clear-btn-text);
     }
 
     .btn-secondary:hover {
-      background: #cbd5e1;
+      background: var(--clear-btn-hover);
     }
 
+    /* Results Table Card */
     .table-container {
-      overflow-x: auto;
       background: var(--card-bg);
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      max-height: 550px;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      overflow-x: auto;
+      max-height: 520px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       cursor: default;
     }
 
     thead {
       position: sticky;
       top: 0;
-      background: #f1f5f9;
-      z-index: 1;
-    }
-
-    th, td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
+      background: var(--table-header-bg);
+      z-index: 2;
+      border-bottom: 1.5px solid var(--border-color);
     }
 
     th {
-      font-weight: 600;
+      padding: 16px 20px;
+      font-weight: 700;
       color: #334155;
+      white-space: nowrap;
+      font-size: 0.88rem;
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid #edf2f7;
+      color: var(--text-dark);
+      white-space: nowrap;
+      font-weight: 500;
     }
 
     tbody tr:hover {
       background-color: #f8fafc;
     }
 
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
     .no-data {
-      padding: 40px;
+      padding: 44px 20px;
       text-align: center;
-      color: #94a3b8;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 900px) {
+      .search-grid {
+        grid-template-columns: 1fr;
+      }
+      .card {
+        padding: 20px;
+      }
+      .header h1 {
+        font-size: 1.8rem;
+      }
     }
   </style>
 </head>
@@ -199,7 +250,7 @@
       <p>Enter exact details in any field below to search records.</p>
     </div>
 
-    <!-- Search Form Card -->
+    <!-- Search Box Card -->
     <div class="card">
       <div class="search-grid">
         <div class="form-group">
@@ -222,7 +273,7 @@
       </div>
     </div>
 
-    <!-- Results Table -->
+    <!-- Table Output Card -->
     <div class="table-container">
       <table id="dataTable">
         <thead id="tableHead"></thead>
@@ -242,7 +293,7 @@
     let allHeaders = [];
     let isInitialLoad = true;
 
-    // Block keyboard copy/select shortcuts
+    // Block keyboard copy/select shortcuts outside search inputs
     document.addEventListener("keydown", (e) => {
       const isInput = e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA";
       if (isInput && (e.key === "a" || e.key === "c" || e.key === "v" || e.key === "x") && (e.ctrlKey || e.metaKey)) {
@@ -254,6 +305,7 @@
       }
     });
 
+    // Helper: Mask mobile number to show only last 4 digits
     function maskMobileNumber(val) {
       if (!val) return "";
       const strVal = String(val).replace(/\s+/g, "").trim();
@@ -263,6 +315,7 @@
       return strVal;
     }
 
+    // Clean text for exact comparison
     function normalizeText(val) {
       return String(val || "")
         .replace(/\s+/g, " ")
@@ -270,7 +323,7 @@
         .toLowerCase();
     }
 
-    // Fetch Google Sheet data (with cache buster)
+    // Fetch Google Sheet data with cache busting
     function fetchDatabase(isBackgroundUpdate = false) {
       const cacheBustUrl = `${BASE_GOOGLE_SHEET_URL}&_t=${Date.now()}`;
 
@@ -281,6 +334,7 @@
         complete: function(results) {
           if (!results.data || results.data.length === 0) return;
 
+          // Process and clean header names
           allHeaders = results.data[0].map(h => String(h || "").replace(/[\r\n]+/g, " ").trim());
           rawRows = results.data.slice(1);
 
@@ -290,7 +344,6 @@
             document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">Please enter exact search details above and click Search.</td></tr>`;
             isInitialLoad = false;
           } else {
-            // Re-apply active search filter on updated data
             const qEpic    = document.getElementById("searchEpic").value.trim();
             const qElector = document.getElementById("searchElector").value.trim();
             const qMobile  = document.getElementById("searchMobile").value.trim();
@@ -309,11 +362,11 @@
       });
     }
 
-    // Initial load on page ready
+    // Initial load
     window.addEventListener("DOMContentLoaded", () => {
       fetchDatabase(false);
 
-      // Auto-refresh data and results every 60 seconds (60000 ms)
+      // Auto-refresh every 60 seconds
       setInterval(() => {
         fetchDatabase(true);
       }, 60000);
@@ -331,6 +384,7 @@
         return;
       }
 
+      // Detect mobile column index
       const mobileColIndex = allHeaders.findIndex(h => h.toLowerCase().includes("mobile") || h.toLowerCase().includes("phone"));
 
       tbody.innerHTML = rows.map(row => {
