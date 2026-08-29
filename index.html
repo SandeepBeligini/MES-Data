@@ -27,7 +27,6 @@
       background-color: var(--bg);
       color: var(--text);
       padding: 24px;
-      /* Prevent selection on whole page */
       -webkit-user-select: none;
       -khtml-user-select: none;
       -moz-user-select: none;
@@ -135,7 +134,6 @@
       background: #cbd5e1;
     }
 
-    /* Unselectable Results Container */
     .table-container {
       overflow-x: auto;
       background: var(--card-bg);
@@ -238,12 +236,13 @@
   </div>
 
   <script>
-    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvszZTFYORH06EEaEiOirIk9c7L2tf8KW_f_onGPXSbS5erFdYp7-_BtV_7JG5L5Ng-9gwyYCXyIOf/pub?output=csv";
+    const BASE_GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvszZTFYORH06EEaEiOirIk9c7L2tf8KW_f_onGPXSbS5erFdYp7-_BtV_7JG5L5Ng-9gwyYCXyIOf/pub?output=csv";
 
     let rawRows = [];
     let allHeaders = [];
+    let isInitialLoad = true;
 
-    // Global Keydown Blocker: Disables copy/select-all shortcuts outside search inputs
+    // Block keyboard copy/select shortcuts
     document.addEventListener("keydown", (e) => {
       const isInput = e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA";
       if (isInput && (e.key === "a" || e.key === "c" || e.key === "v" || e.key === "x") && (e.ctrlKey || e.metaKey)) {
@@ -255,7 +254,6 @@
       }
     });
 
-    // Mask mobile number: only show last 4 digits
     function maskMobileNumber(val) {
       if (!val) return "";
       const strVal = String(val).replace(/\s+/g, "").trim();
@@ -265,7 +263,6 @@
       return strVal;
     }
 
-    // Normalize text for strict comparison
     function normalizeText(val) {
       return String(val || "")
         .replace(/\s+/g, " ")
@@ -273,33 +270,53 @@
         .toLowerCase();
     }
 
-    // Load and parse Google Spreadsheet CSV (Array of Arrays mode for exact column letters)
-    window.addEventListener("DOMContentLoaded", () => {
-      Papa.parse(GOOGLE_SHEET_CSV_URL, {
+    // Fetch Google Sheet data (with cache buster)
+    function fetchDatabase(isBackgroundUpdate = false) {
+      const cacheBustUrl = `${BASE_GOOGLE_SHEET_URL}&_t=${Date.now()}`;
+
+      Papa.parse(cacheBustUrl, {
         download: true,
-        header: false, // Reads as 2D array: row[0]=Col A, row[4]=Col E
+        header: false,
         skipEmptyLines: true,
         complete: function(results) {
-          if (!results.data || results.data.length === 0) {
-            document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="100%">No data received from Google Sheets.</td></tr>`;
-            return;
-          }
+          if (!results.data || results.data.length === 0) return;
 
-          // Row 0 contains Headers
           allHeaders = results.data[0].map(h => String(h || "").replace(/[\r\n]+/g, " ").trim());
-          
-          // Data rows
           rawRows = results.data.slice(1);
-          
+
           renderTableHead(allHeaders);
-          
-          document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">Please enter exact search details above and click Search.</td></tr>`;
+
+          if (isInitialLoad) {
+            document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">Please enter exact search details above and click Search.</td></tr>`;
+            isInitialLoad = false;
+          } else {
+            // Re-apply active search filter on updated data
+            const qEpic    = document.getElementById("searchEpic").value.trim();
+            const qElector = document.getElementById("searchElector").value.trim();
+            const qMobile  = document.getElementById("searchMobile").value.trim();
+
+            if (qEpic || qElector || qMobile) {
+              performSearch();
+            }
+          }
         },
         error: function(err) {
-          document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="100%">Error connecting to Google Sheets. Please ensure the link is public.</td></tr>`;
-          console.error("PapaParse error:", err);
+          if (isInitialLoad) {
+            document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="100%">Error connecting to Google Sheets. Please ensure the link is public.</td></tr>`;
+          }
+          console.error("Fetch error:", err);
         }
       });
+    }
+
+    // Initial load on page ready
+    window.addEventListener("DOMContentLoaded", () => {
+      fetchDatabase(false);
+
+      // Auto-refresh data and results every 60 seconds (60000 ms)
+      setInterval(() => {
+        fetchDatabase(true);
+      }, 60000);
     });
 
     function renderTableHead(cols) {
@@ -314,7 +331,6 @@
         return;
       }
 
-      // Find mobile column index to apply masking
       const mobileColIndex = allHeaders.findIndex(h => h.toLowerCase().includes("mobile") || h.toLowerCase().includes("phone"));
 
       tbody.innerHTML = rows.map(row => {
@@ -348,7 +364,6 @@
         return;
       }
 
-      // Identify Mobile Column Index (default to Column D / Index 3 if header text varies)
       let mobileIdx = allHeaders.findIndex(h => h.toLowerCase().includes("mobile") || h.toLowerCase().includes("phone"));
       if (mobileIdx === -1) mobileIdx = 3;
 
