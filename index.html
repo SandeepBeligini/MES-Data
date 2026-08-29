@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Database Search Portal</title>
-  <!-- PapaParse for direct Google Sheet CSV parsing -->
+  <!-- PapaParse for Google Sheets CSV parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root {
@@ -156,12 +156,6 @@
       text-align: left;
       font-size: 0.85rem;
       cursor: default;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
     }
 
     thead {
@@ -219,8 +213,8 @@
           <input type="text" id="searchElector" placeholder="Enter exact full Elector Name..." onkeyup="checkEnter(event)" />
         </div>
         <div class="form-group">
-          <label for="searchMobile">Phone Number (Exact 10 digits)</label>
-          <input type="text" id="searchMobile" placeholder="Enter exact Phone Number..." onkeyup="checkEnter(event)" />
+          <label for="searchMobile">Mobile Number (Exact 10 digits)</label>
+          <input type="text" id="searchMobile" placeholder="Enter exact Mobile Number..." onkeyup="checkEnter(event)" />
         </div>
       </div>
 
@@ -236,7 +230,7 @@
         <thead id="tableHead"></thead>
         <tbody id="tableBody">
           <tr>
-            <td class="no-data" colspan="100%">Please enter exact search details above and click Search.</td>
+            <td class="no-data" colspan="100%">Loading database from Google Sheets...</td>
           </tr>
         </tbody>
       </table>
@@ -244,13 +238,12 @@
   </div>
 
   <script>
-    // Live published Google Sheet CSV URL
-    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvszZTFYORH06EEaEiOirIk9c7L2tf8KW_f_onGPXSbS5erFdYp7-_BtV_7JG5L5Ng-9gwyYCXyIOf/pub?gid=589199005&single=true&output=csv";
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvszZTFYORH06EEaEiOirIk9c7L2tf8KW_f_onGPXSbS5erFdYp7-_BtV_7JG5L5Ng-9gwyYCXyIOf/pub?output=csv";
 
-    let dbData = [];
+    let rawRows = [];
     let allHeaders = [];
 
-    // Global Keydown Blocker: Disables copy/select-all shortcuts outside inputs
+    // Global Keydown Blocker: Disables copy/select-all shortcuts outside search inputs
     document.addEventListener("keydown", (e) => {
       const isInput = e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA";
       if (isInput && (e.key === "a" || e.key === "c" || e.key === "v" || e.key === "x") && (e.ctrlKey || e.metaKey)) {
@@ -262,70 +255,72 @@
       }
     });
 
-    // Helper: Mask mobile number to show only last 4 digits
+    // Mask mobile number: only show last 4 digits
     function maskMobileNumber(val) {
       if (!val) return "";
-      const strVal = String(val).trim();
+      const strVal = String(val).replace(/\s+/g, "").trim();
       if (strVal.length > 4) {
-        const lastFour = strVal.slice(-4);
-        return "*".repeat(strVal.length - 4) + lastFour;
+        return "*".repeat(strVal.length - 4) + strVal.slice(-4);
       }
       return strVal;
     }
 
-    // Map column aliases
-    function getNormalizedRow(row) {
-      const keys = Object.keys(row);
-      const getVal = (targetName) => {
-        const key = keys.find(k => k.trim().toLowerCase() === targetName.toLowerCase());
-        return key ? String(row[key] || "").trim() : "";
-      };
-
-      return {
-        ...row,
-        _epic: getVal("EPIC Number"),
-        _elector: getVal("Elector Name"),
-        _mobile: getVal("Mobile Number") || getVal("Phone Number")
-      };
+    // Normalize text for strict comparison
+    function normalizeText(val) {
+      return String(val || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
     }
 
-    // Fetch and Parse directly from Google Spreadsheet
+    // Load and parse Google Spreadsheet CSV (Array of Arrays mode for exact column letters)
     window.addEventListener("DOMContentLoaded", () => {
       Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
-        header: true,
+        header: false, // Reads as 2D array: row[0]=Col A, row[4]=Col E
         skipEmptyLines: true,
         complete: function(results) {
-          allHeaders = results.meta.fields || [];
-          dbData = results.data.map(getNormalizedRow);
+          if (!results.data || results.data.length === 0) {
+            document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="100%">No data received from Google Sheets.</td></tr>`;
+            return;
+          }
+
+          // Row 0 contains Headers
+          allHeaders = results.data[0].map(h => String(h || "").replace(/[\r\n]+/g, " ").trim());
+          
+          // Data rows
+          rawRows = results.data.slice(1);
+          
           renderTableHead(allHeaders);
+          
+          document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">Please enter exact search details above and click Search.</td></tr>`;
         },
         error: function(err) {
-          const tbody = document.getElementById("tableBody");
-          tbody.innerHTML = `<tr><td class="no-data" colspan="100%">Error connecting to Google Spreadsheet database.</td></tr>`;
-          console.error(err);
+          document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="100%">Error connecting to Google Sheets. Please ensure the link is public.</td></tr>`;
+          console.error("PapaParse error:", err);
         }
       });
     });
 
-    // Render Full Headers in Table
     function renderTableHead(cols) {
       const thead = document.getElementById("tableHead");
-      thead.innerHTML = `<tr>${cols.map(c => `<th>${c.trim()}</th>`).join("")}</tr>`;
+      thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
     }
 
-    // Render Table Rows for Results
-    function renderTableRows(data) {
+    function renderTableRows(rows) {
       const tbody = document.getElementById("tableBody");
-      if (data.length === 0) {
+      if (rows.length === 0) {
         tbody.innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">No exact matching records found.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = data.map(row => {
-        return `<tr>${allHeaders.map(col => {
-          let cellVal = row[col] !== undefined ? row[col] : "";
-          if (col.trim().toLowerCase().includes("mobile") || col.trim().toLowerCase().includes("phone")) {
+      // Find mobile column index to apply masking
+      const mobileColIndex = allHeaders.findIndex(h => h.toLowerCase().includes("mobile") || h.toLowerCase().includes("phone"));
+
+      tbody.innerHTML = rows.map(row => {
+        return `<tr>${allHeaders.map((_, colIndex) => {
+          let cellVal = row[colIndex] !== undefined ? String(row[colIndex]).trim() : "";
+          if (colIndex === mobileColIndex || (mobileColIndex === -1 && colIndex === 3)) {
             cellVal = maskMobileNumber(cellVal);
           }
           return `<td>${cellVal}</td>`;
@@ -333,62 +328,64 @@
       }).join("");
     }
 
-    // Trigger search on Enter key
     function checkEnter(event) {
       if (event.key === "Enter") {
         performSearch();
       }
     }
 
-    // Strict Exact Matching Search
     function performSearch() {
-      const qEpic    = document.getElementById("searchEpic").value.trim();
-      const qElector = document.getElementById("searchElector").value.trim();
-      const qMobile  = document.getElementById("searchMobile").value.trim();
+      const rawEpic    = document.getElementById("searchEpic").value;
+      const rawElector = document.getElementById("searchElector").value;
+      const rawMobile  = document.getElementById("searchMobile").value;
+
+      const qEpic    = normalizeText(rawEpic);
+      const qElector = normalizeText(rawElector);
+      const qMobile  = rawMobile.replace(/\D/g, "");
 
       if (!qEpic && !qElector && !qMobile) {
-        const tbody = document.getElementById("tableBody");
-        tbody.innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">Please enter exact search details above and click Search.</td></tr>`;
+        document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">Please enter exact search details above and click Search.</td></tr>`;
         return;
       }
 
-      const filtered = dbData.filter(row => {
-        // EPIC Number exact match
-        let matchEpic = true;
-        if (qEpic) {
-          matchEpic = (qEpic.toUpperCase() === row._epic.toUpperCase());
-        }
+      // Identify Mobile Column Index (default to Column D / Index 3 if header text varies)
+      let mobileIdx = allHeaders.findIndex(h => h.toLowerCase().includes("mobile") || h.toLowerCase().includes("phone"));
+      if (mobileIdx === -1) mobileIdx = 3;
 
-        // Elector Name exact full name match
+      const filtered = rawRows.filter(row => {
+        // Elector Name in Column A (Index 0)
         let matchElector = true;
         if (qElector) {
-          const cleanQName = qElector.toLowerCase().replace(/\s+/g, " ");
-          const cleanRowName = row._elector.toLowerCase().replace(/\s+/g, " ");
-          matchElector = (cleanQName === cleanRowName);
+          const colAVal = normalizeText(row[0]);
+          matchElector = (colAVal === qElector);
         }
 
-        // Phone Number exact digits match
+        // EPIC Number in Column E (Index 4)
+        let matchEpic = true;
+        if (qEpic) {
+          const colEVal = normalizeText(row[4]);
+          matchEpic = (colEVal === qEpic);
+        }
+
+        // Mobile Number in Mobile Column
         let matchMobile = true;
         if (qMobile) {
-          const cleanQuery = qMobile.replace(/\D/g, "");
-          const cleanRecord = row._mobile.replace(/\D/g, "");
-          matchMobile = (cleanQuery.length > 0 && cleanQuery === cleanRecord);
+          const mobileVal = String(row[mobileIdx] || "").replace(/\D/g, "");
+          matchMobile = (mobileVal.length > 0 && mobileVal === qMobile);
         }
 
-        return matchEpic && matchElector && matchMobile;
+        return matchElector && matchEpic && matchMobile;
       });
 
       renderTableRows(filtered);
     }
 
-    // Reset Form and Table
     function resetSearch() {
       document.getElementById("searchEpic").value = "";
       document.getElementById("searchElector").value = "";
       document.getElementById("searchMobile").value = "";
 
-      const tbody = document.getElementById("tableBody");
-      tbody.innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">Please enter exact search details above and click Search.</td></tr>`;
+      document.getElementById("tableBody").innerHTML = `<tr><td class="no-data" colspan="${allHeaders.length || 1}">Please enter exact search details above and click Search.</td></tr>`;
     }
   </script>
 </body>
