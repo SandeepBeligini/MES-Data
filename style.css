@@ -1,0 +1,579 @@
+/* =========================================================
+   Electoral Database Search Portal
+   Light + Colorful Modern UI Theme
+   ========================================================= */
+
+:root {
+  --bg-1: #f7fbff;
+  --bg-2: #eef7ff;
+  --surface: rgba(255, 255, 255, 0.96);
+  --surface-soft: #f8fbff;
+
+  --navy: #102a63;
+  --navy-soft: #27457a;
+  --text: #415b80;
+  --muted: #7185a3;
+
+  --primary: #2474ed;
+  --primary-dark: #155dcc;
+  --primary-light: #e8f1ff;
+
+  --border: #d8e7f7;
+  --border-focus: #8dbdff;
+
+  --green: #22a447;
+  --green-light: #eaf9ef;
+
+  --purple: #7047e8;
+  --purple-light: #f1ebff;
+
+  --shadow-sm: 0 4px 14px rgba(54, 93, 140, 0.08);
+  --shadow-md: 0 12px 32px rgba(54, 93, 140, 0.12);
+
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+}
+
+/* ---------- Page ---------- */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: var(--text);
+
+  background:
+    radial-gradient(circle at 90% 12%, rgba(124, 180, 255, 0.20) 0 3px, transparent 4px) 0 0 / 32px 32px,
+    radial-gradient(circle at 8% 90%, rgba(103, 202, 190, 0.12) 0 3px, transparent 4px) 0 0 / 32px 32px,
+    linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 52%, #f8fcff 100%);
+
+  overflow-x: hidden;
+}
+
+/* Soft decorative background shapes */
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+body::before {
+  width: 430px;
+  height: 220px;
+  top: -120px;
+  left: -150px;
+  background: linear-gradient(
+    135deg,
+    rgba(82, 157, 244, 0.42),
+    rgba(171, 215, 255, 0.16)
+  );
+  transform: rotate(-15deg);
+}
+
+body::after {
+  width: 480px;
+  height: 220px;
+  right: -180px;
+  bottom: -100px;
+  background: linear-gradient(
+    135deg,
+    rgba(168, 205, 255, 0.12),
+    rgba(75, 151, 242, 0.30)
+  );
+  transform: rotate(-15deg);
+}
+
+/* ---------- Main container ---------- */
+
+.container,
+.portal-container,
+.page-container {
+  width: min(100% - 40px, 1120px);
+  margin: 0 auto;
+  padding: 56px 0 70px;
+}
+
+/* ---------- Header ---------- */
+
+header,
+.portal-header {
+  text-align: center;
+  margin-bottom: 38px;
+}
+
+header h1,
+.portal-header h1,
+.page-title {
+  margin: 0;
+  color: var(--navy);
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -1.8px;
+}
+
+header p,
+.portal-header p,
+.subtitle {
+  max-width: 760px;
+  margin: 24px auto 0;
+  color: #5f7598;
+  font-size: clamp(18px, 2.3vw, 27px);
+  line-height: 1.55;
+}
+
+/* ---------- Search Card ---------- */
+
+.search-card,
+.search-panel,
+.form-card {
+  position: relative;
+  padding: 42px;
+  margin-bottom: 34px;
+
+  background: var(--surface);
+  border: 1px solid rgba(216, 231, 247, 0.95);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+
+  backdrop-filter: blur(10px);
+}
+
+/* ---------- Form Groups ---------- */
+
+.form-group,
+.field-group {
+  margin-bottom: 27px;
+}
+
+.form-group:last-child,
+.field-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label,
+.field-group label {
+  display: block;
+  margin-bottom: 12px;
+
+  color: var(--navy-soft);
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+/* ---------- Inputs ---------- */
+
+.form-group input,
+.field-group input,
+input[type="text"],
+input[type="tel"],
+input[type="search"] {
+  width: 100%;
+  height: 68px;
+  padding: 0 22px;
+
+  color: var(--navy-soft);
+  background: var(--surface-soft);
+
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  outline: none;
+  font-size: 19px;
+  font-family: inherit;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.form-group input::placeholder,
+.field-group input::placeholder {
+  color: #9aaac0;
+}
+
+.form-group input:hover,
+.field-group input:hover {
+  border-color: #b9d4f4;
+  background: #ffffff;
+}
+
+.form-group input:focus,
+.field-group input:focus,
+input:focus {
+  background: #ffffff;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 4px rgba(64, 139, 238, 0.12);
+}
+
+/* ---------- Optional Input Icons ---------- */
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper input {
+  padding-left: 74px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+
+  border-radius: 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+
+  font-size: 21px;
+}
+
+/* Different field colours */
+
+.input-wrapper.epic .input-icon {
+  color: var(--primary);
+  background: #e7f1ff;
+}
+
+.input-wrapper.name .input-icon {
+  color: var(--green);
+  background: var(--green-light);
+}
+
+.input-wrapper.mobile .input-icon {
+  color: var(--purple);
+  background: var(--purple-light);
+}
+
+/* ---------- Buttons ---------- */
+
+.button-row,
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 32px;
+}
+
+button,
+.btn {
+  min-width: 220px;
+  height: 64px;
+  padding: 0 34px;
+
+  border: 0;
+  border-radius: 13px;
+
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.btn-search,
+button[type="submit"],
+.search-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #2879ed, #1768df);
+  box-shadow: 0 8px 18px rgba(36, 116, 237, 0.25);
+}
+
+.btn-search:hover,
+button[type="submit"]:hover,
+.search-btn:hover {
+  background: linear-gradient(135deg, #1f70e5, #105bc9);
+  box-shadow: 0 11px 24px rgba(36, 116, 237, 0.30);
+  transform: translateY(-2px);
+}
+
+.btn-clear,
+.clear-btn {
+  color: #304a73;
+  background: #eaf2fb;
+  box-shadow: 0 5px 14px rgba(69, 104, 142, 0.08);
+}
+
+.btn-clear:hover,
+.clear-btn:hover {
+  background: #dfeaf6;
+  transform: translateY(-2px);
+}
+
+button:active,
+.btn:active {
+  transform: translateY(0);
+}
+
+/* ---------- Results Table ---------- */
+
+.results-card,
+.results-panel,
+.table-container {
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #cfe1f5;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.results-header,
+.table-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+
+  min-height: 82px;
+  align-items: center;
+
+  background: linear-gradient(135deg, #edf6ff, #f5faff);
+  border-bottom: 1px solid #d9e8f7;
+}
+
+.results-header > *,
+.table-header > * {
+  padding: 0 28px;
+  color: var(--navy);
+  font-size: 21px;
+  font-weight: 750;
+}
+
+.results-body,
+.table-body {
+  min-height: 310px;
+  background: #ffffff;
+}
+
+/* If using a normal HTML table */
+
+.results-card table,
+.results-panel table,
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-card th,
+.results-panel th {
+  padding: 24px;
+  text-align: left;
+  color: var(--navy);
+  background: #eef6ff;
+  border-bottom: 1px solid var(--border);
+  font-size: 19px;
+}
+
+.results-card td,
+.results-panel td {
+  padding: 20px 24px;
+  color: var(--text);
+  border-bottom: 1px solid #edf2f7;
+  font-size: 17px;
+}
+
+/* ---------- Empty Results ---------- */
+
+.empty-state {
+  min-height: 310px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.empty-state-icon {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 20px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 22px;
+  color: #4b91ed;
+  background: linear-gradient(135deg, #eaf4ff, #f5faff);
+
+  font-size: 42px;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #60789d;
+  font-size: 19px;
+}
+
+/* ---------- Alerts / Status ---------- */
+
+.success-message {
+  padding: 14px 18px;
+  color: #18783a;
+  background: #edfaf1;
+  border: 1px solid #c9efd5;
+  border-radius: 12px;
+}
+
+.error-message {
+  padding: 14px 18px;
+  color: #a32635;
+  background: #fff0f2;
+  border: 1px solid #f4cbd1;
+  border-radius: 12px;
+}
+
+/* ---------- Loading ---------- */
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #d7e8ff;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+  .container,
+  .portal-container,
+  .page-container {
+    width: min(100% - 24px, 1120px);
+    padding-top: 32px;
+  }
+
+  header h1,
+  .portal-header h1,
+  .page-title {
+    font-size: 39px;
+    letter-spacing: -1px;
+  }
+
+  header p,
+  .portal-header p,
+  .subtitle {
+    margin-top: 16px;
+    font-size: 18px;
+  }
+
+  .search-card,
+  .search-panel,
+  .form-card {
+    padding: 24px 18px;
+    border-radius: 18px;
+  }
+
+  .form-group label,
+  .field-group label {
+    font-size: 18px;
+  }
+
+  .form-group input,
+  .field-group input,
+  input[type="text"],
+  input[type="tel"],
+  input[type="search"] {
+    height: 60px;
+    font-size: 16px;
+  }
+
+  .button-row,
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  button,
+  .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .results-header,
+  .table-header {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .results-header > *,
+  .table-header > * {
+    padding: 14px 18px;
+    font-size: 17px;
+  }
+
+  .results-body,
+  .table-body {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container,
+  .portal-container,
+  .page-container {
+    width: calc(100% - 18px);
+  }
+
+  header h1,
+  .portal-header h1,
+  .page-title {
+    font-size: 32px;
+  }
+
+  .search-card,
+  .search-panel,
+  .form-card {
+    padding: 20px 14px;
+  }
+}
+
+/* ---------- Reduced Motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
